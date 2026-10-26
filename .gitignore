@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# browser automation dumps
+.playwright-mcp
+
 # production
 /build
 
@@ -32,6 +35,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# official student lists stay off the repo
+/data/*.csv
 
 # vercel
 .vercel
@@ -39,3 +46,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma client
+/src/generated

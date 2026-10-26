@@ -1,15 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone",
   experimental: {
     agentFeedback: true,
   },
   cacheComponents: true,
+  serverExternalPackages: ["@prisma/adapter-pg", "pg", "minio"],
   partialPrefetching: true,
   turbopack: {
     rules: {
-      "*.css": {
+      "globals.css": {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },

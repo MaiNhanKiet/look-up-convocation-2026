@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #e66b24;
+  --color-brand-deep: #bc4b16;
+  --color-brand-ink: #973b16;
+  --color-accent: #1554e8;
+  --color-ivory: #f8f5ef;
+  --color-ink: #2c302e;
+  --color-muted: #6e7069;
+  --color-line: #ded8ce;
+  --color-paper: #fffdf9;
+  --font-sans:
+    var(--font-be-vietnam), "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-display: var(--font-billy), var(--font-be-vietnam), sans-serif;
+  --font-accent: var(--font-micra), var(--font-be-vietnam), sans-serif;
+  --font-editorial: var(--font-axiforma), var(--font-be-vietnam), sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  --ceremony-gold: #a78b5c;
+  --ceremony-soft: #f1e8da;
+  --ceremony-orange-wash: #f7e9dc;
+  --ceremony-success: #45664e;
+  --ceremony-radius: 6px;
+  --ceremony-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ceremony-space: 8px;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+html.led-scroll-lock,
+html.led-scroll-lock body {
+  overflow: hidden;
+}
+html::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.page-scrollbar {
+  position: fixed;
+  z-index: 30;
+  top: 8px;
+  right: 2px;
+  bottom: 8px;
+  width: 16px;
+  pointer-events: none;
+}
+.page-scrollbar > span {
+  display: flex;
+  justify-content: flex-end;
+  width: 16px;
+  cursor: grab;
+  touch-action: none;
+  transition: opacity 0.35s ease;
+}
+.page-scrollbar > span > i {
+  display: block;
+  flex: 0 0 auto;
+  width: 6px;
+  height: 100%;
+  border-radius: 999px;
+  pointer-events: none;
+  background: rgb(167 139 92 / 0.55);
+  transition: background-color 0.2s ease;
+}
+.page-scrollbar > span:hover > i,
+.page-scrollbar > span:active > i {
+  background: rgb(167 139 92 / 0.82);
+}
+.page-scrollbar > span:active {
+  cursor: grabbing;
+}
+
+body {
+  background: var(--color-ivory);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  isolation: isolate;
+}
+
+button:not(:disabled),
+summary,
+a {
+  cursor: pointer;
+}
+
+::selection {
+  background: #f6d3bc;
+  color: #252525;
+}
+
+:focus-visible {
+  outline: 2px solid #c2410c;
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 20;
+  background: #ffffff;
+  color: #252525;
+  padding: 0.5rem 0.75rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.hero-frame {
+  width: min(100%, calc((100svh - 27rem) * 16 / 9));
+}
+
+@keyframes result-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.result-enter {
+  animation: result-in 420ms ease;
+}
+
+.led-dialog {
+  width: min(60rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  border: 1px solid #e6ddd2;
+  background: #ffffff;
+  padding: 1rem;
+  margin: auto;
+  border-radius: 1rem;
+}
+
+.led-dialog::backdrop {
+  background: rgb(30 29 24 / 0.75);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .result-enter {
+    animation: none;
+  }
+
+  .page-scrollbar > span {
+    transition: none;
+  }
+}

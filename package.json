@@ -6,21 +6,41 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import ./test/register-alias.mjs --import tsx --test src/lib/config.test.ts src/lib/validators/student.test.ts src/lib/security/rate-limit.test.ts src/lib/lookup/perform-lookup.test.ts src/lib/minio/led-access.test.ts src/lib/import/parse-student-csv.test.ts src/app/api/students/lookup/route.test.ts",
+    "import:students": "node --import ./test/register-alias.mjs --import tsx scripts/import-students.ts",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "dotenv": "^18.0.9",
+    "lucide": "^1.61.0",
+    "lucide-react": "^1.61.0",
+    "minio": "^8.0.7",
+    "morphicons": "^2.0.2",
+    "motion": "^14.6.0",
     "next": "16.4.3",
+    "pg": "^8.23.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "csv-parse": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "prisma": "^7.10.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
