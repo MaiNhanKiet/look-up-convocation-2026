@@ -54,6 +54,20 @@ function presentText(value: string | null): string | null {
   return trimmed ? trimmed : null;
 }
 
+function presentHttpUrl(value: string | null): string | null {
+  const text = presentText(value);
+  if (!text) return null;
+
+  try {
+    const url = new URL(text);
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.toString()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function presentStudent(
   row: StudentRow,
   options: {
@@ -64,11 +78,12 @@ export async function presentStudent(
 ): Promise<PublicStudent> {
   const email = presentText(row.email);
   const path = presentText(row.led_image_key);
+  const ledExternalUrl = presentHttpUrl(path);
   let ledImageUrl: string | null = null;
   let ledImageExpiresAt: number | null = null;
   let ledImageStatus: PublicStudent["ledImageStatus"] = "missing";
 
-  if (path) {
+  if (path && !ledExternalUrl) {
     const demoLed = options.demo && path === DEMO_LED_PATH;
     if (!demoLed && !isSafeLedPath(path)) {
       ledImageStatus = "unavailable";
@@ -99,8 +114,12 @@ export async function presentStudent(
     emailRevealable: Boolean(email) && options.emailMode === "full",
     seatTcn: presentText(row.seat_tcn),
     seatPh2: presentText(row.seat_ph2),
-    checkinZone: presentText(row.checkin_zone),
-    checkinWaitingRoom: presentText(row.checkin_waiting_room),
+    checkinTime: presentText(row.checkin_time),
+    checkinRoom: presentText(row.checkin_room),
+    awardTime: presentText(row.award_time),
+    contactGroup: presentText(row.contact_group),
+    invitationLink: presentHttpUrl(row.invitation_link),
+    ledExternalUrl,
     sessionLabel: presentText(row.session_label),
     ledImageUrl,
     ledImageExpiresAt,

@@ -50,17 +50,33 @@ export function hashRateLimitKey(
   address: string,
   scope: RateLimitScope = "lookup",
 ): string {
-  const salt = process.env.RATE_LIMIT_SALT || "development-salt";
+  const configured = process.env.RATE_LIMIT_SALT?.trim();
+  const salt =
+    configured && configured !== "development-salt"
+      ? configured
+      : process.env.NODE_ENV === "production"
+        ? null
+        : "development-salt";
+  if (!salt) {
+    throw new Error("RATE_LIMIT_SALT must be set to a unique value in production");
+  }
   return createHash("sha256")
     .update(`${salt}:${scope}:${address}`)
     .digest("hex");
 }
 
 export function clientAddress(request: Request): string {
+  const trustProxy = process.env.TRUST_PROXY?.trim().toLowerCase();
+  if (trustProxy !== "true" && trustProxy !== "1") return "unknown";
+
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
-    const first = forwarded.split(",")[0]?.trim();
-    if (first) return first;
+    const last = forwarded
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .at(-1);
+    if (last) return last;
   }
   const realIp = request.headers.get("x-real-ip")?.trim();
   return realIp || "unknown";

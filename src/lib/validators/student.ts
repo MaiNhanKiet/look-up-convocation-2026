@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-export const STUDENT_CODE_PATTERN = /^[HQDSC][EAS][0-9]{6}$/;
+// 6 digits as usual, or 5 digits when the first digit is 5–9 (e.g. SE63081).
+export const STUDENT_CODE_PATTERN =
+  /^[HQDSC][EAS]([0-9]{6}|[5-9][0-9]{4})$/;
 
 export const studentCodeSchema = z
   .string()

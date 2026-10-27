@@ -57,7 +57,7 @@ Bảng `students` chỉ được máy chủ đọc qua Prisma. Hạn mức tra c
 CSV UTF-8, có hoặc không có BOM. Dòng tiêu đề:
 
 ```text
-student_code,full_name,email,seat_tcn,seat_ph2,checkin_zone,led_image_key,session_label
+student_code,full_name,email,seat_tcn,seat_ph2,checkin_time,checkin_room,award_time,contact_group,led_image_key,session_label
 ```
 
 `student_code` và `full_name` là bắt buộc. Ô trống được lưu thành null. Script chuẩn hóa MSSV, bỏ dòng sai, giữ bản ghi cuối nếu MSSV lặp trong file, rồi upsert theo `student_code`.

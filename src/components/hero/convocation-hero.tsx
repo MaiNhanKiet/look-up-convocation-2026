@@ -49,9 +49,9 @@ export function ConvocationHero() {
     <section className={styles.hero} aria-labelledby="event-title">
       <p className={styles.eventIdentity}>FPT UNIVERSITY HCMC</p>
       <h1 id="event-title" className={styles.eventTitle}>
-        <span>Convocation</span>
+        <span>Graduation</span>
         <span className={styles.eventTitleLine}>
-          Day<span className={styles.titleDot}>.</span>
+          Ceremony<span className={styles.titleDot}>.</span>
           <span className={styles.eventYear}>
             20
             <br />
@@ -60,10 +60,7 @@ export function ConvocationHero() {
         </span>
       </h1>
       <div className={styles.artwork}>
-        <CeremonyMotif
-          animationCycle={animationCycle}
-          isFading={isFading}
-        />
+        <CeremonyMotif animationCycle={animationCycle} isFading={isFading} />
         <p
           key={animationCycle}
           className={`${styles.eventMotto} ${styles.repeatingArtwork}`}

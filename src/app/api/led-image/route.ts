@@ -39,6 +39,7 @@ export async function GET(request: Request): Promise<Response> {
       "Content-Type": object.contentType,
       "Content-Length": String(object.size),
       "Cache-Control": "private, no-store",
+      "Content-Security-Policy": "default-src 'none'; sandbox",
       "X-Content-Type-Options": "nosniff",
       "X-Robots-Tag": "noindex, noarchive",
     },

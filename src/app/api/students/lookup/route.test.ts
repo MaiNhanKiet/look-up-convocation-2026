@@ -35,7 +35,17 @@ describe("POST /api/students/lookup", () => {
     assert.equal(body.student.fullName, "Nguyễn An Demo");
     assert.equal(body.student.seatTcn, "A-128");
     assert.equal(body.student.seatPh2, "B-014");
-    assert.equal(body.student.checkinWaitingRoom, "Phòng 101");
+    assert.equal(body.student.checkinTime, "07:00");
+    assert.equal(body.student.checkinRoom, "Phòng 101");
+    assert.equal(body.student.awardTime, "08:30");
+    assert.equal(
+      body.student.contactGroup,
+      "https://example.com/nhom-lien-lac-01",
+    );
+    assert.equal(
+      body.student.invitationLink,
+      "https://example.com/thu-moi/HE260001",
+    );
     assert.equal(body.student.ledImageStatus, "ready");
     assert.equal(body.student.email, "an.demo@example.edu");
     assert.equal(body.student.emailRevealable, true);
@@ -59,7 +69,11 @@ describe("POST /api/students/lookup", () => {
     const response = await POST(post({ studentCode: "SS260007" }));
     const body = await response.json();
     assert.equal(body.student.seatTcn, null);
-    assert.equal(body.student.checkinWaitingRoom, null);
+    assert.equal(body.student.checkinTime, null);
+    assert.equal(body.student.checkinRoom, null);
+    assert.equal(body.student.awardTime, null);
+    assert.equal(body.student.contactGroup, null);
+    assert.equal(body.student.invitationLink, null);
     assert.equal(body.student.email, null);
     assert.equal(body.student.emailRevealable, false);
     assert.equal(body.student.ledImageStatus, "missing");

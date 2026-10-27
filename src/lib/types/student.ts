@@ -4,8 +4,11 @@ export type StudentRow = {
   email: string | null;
   seat_tcn: string | null;
   seat_ph2: string | null;
-  checkin_zone: string | null;
-  checkin_waiting_room: string | null;
+  checkin_time: string | null;
+  checkin_room: string | null;
+  award_time: string | null;
+  contact_group: string | null;
+  invitation_link: string | null;
   led_image_key: string | null;
   session_label: string | null;
 };
@@ -27,8 +30,12 @@ export type PublicStudent = {
   emailRevealable: boolean;
   seatTcn: string | null;
   seatPh2: string | null;
-  checkinZone: string | null;
-  checkinWaitingRoom: string | null;
+  checkinTime: string | null;
+  checkinRoom: string | null;
+  awardTime: string | null;
+  contactGroup: string | null;
+  invitationLink: string | null;
+  ledExternalUrl: string | null;
   ledImageUrl: string | null;
   ledImageExpiresAt: number | null;
   ledImageStatus: LedImageStatus;
@@ -55,3 +62,12 @@ export type LookupResponse =
         retryAfterSeconds?: number;
       };
     };
+
+export type LedImageRefresh =
+  | {
+      ok: true;
+      ledImageUrl: string;
+      ledImageExpiresAt: number;
+      ledImageStatus: "ready";
+    }
+  | { ok: false; ledImageStatus: Exclude<LedImageStatus, "ready"> };

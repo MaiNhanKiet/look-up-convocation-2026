@@ -12,12 +12,15 @@ const validCodes = [
   "DS123456",
   "CS987654",
   "SS000001",
+  "SE63081",
+  "SE53081",
 ];
 
 const invalidCodes = [
   "XE123456",
   "HH123456",
   "HE12345",
+  "SE43081",
   "HE1234567",
   "HEABCDEF",
   "12345678",

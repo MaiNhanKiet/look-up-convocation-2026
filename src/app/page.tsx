@@ -7,8 +7,12 @@ import {
   readMaintenanceReopenAt,
 } from "@/lib/config";
 import styles from "@/components/lookup/ceremony.module.css";
+import { connection } from "next/server";
 
-export default function HomePage() {
+export const instant = false;
+
+export default async function HomePage() {
+  await connection();
   if (isMaintenanceMode()) {
     return (
       <div id="top" className="flex min-h-dvh flex-col">
@@ -28,7 +32,10 @@ export default function HomePage() {
     );
   }
 
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || null;
+  const turnstileSiteKey =
+    process.env.TURNSTILE_SITE_KEY?.trim() ||
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ||
+    null;
 
   return (
     <div id="top" className="flex min-h-dvh flex-col">

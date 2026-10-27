@@ -77,8 +77,11 @@ export async function findStudentByCode(code: string): Promise<StudentRow | null
     email: row.email,
     seat_tcn: row.seatTcn,
     seat_ph2: row.seatPh2,
-    checkin_zone: row.checkinZone,
-    checkin_waiting_room: row.checkinWaitingRoom,
+    checkin_time: row.checkinTime,
+    checkin_room: row.checkinRoom,
+    award_time: row.awardTime,
+    contact_group: row.contactGroup,
+    invitation_link: row.invitationLink,
     led_image_key: row.ledImageKey,
     session_label: row.sessionLabel,
   };

@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { LedPreview } from "@/components/lookup/led-preview";
 import { StudentInfoCard } from "@/components/lookup/student-info-card";
 import { copy } from "@/lib/copy";
@@ -16,14 +16,9 @@ export function StudentResult({
   student: PublicStudent;
   correctionFormUrl: string | null;
 }) {
-  const headingRef = useRef<HTMLHeadingElement>(null);
   const [emailVisible, setEmailVisible] = useState(false);
   const hiddenEmail = student.email ? maskEmail(student.email) : copy.updating;
   const revealedEmail = student.email ?? copy.updating;
-
-  useEffect(() => {
-    headingRef.current?.focus({ preventScroll: true });
-  }, [student.studentCode]);
 
   return (
     <article
@@ -42,12 +37,18 @@ export function StudentResult({
               <span className={styles.demoLabel}>Dữ liệu minh họa</span>
             ) : null}
           </div>
-          <h2 ref={headingRef} tabIndex={-1} className={styles.studentName}>
+          <h2 tabIndex={-1} className={styles.studentName}>
             {student.fullName}
           </h2>
           <p className={styles.studentCode}>
             <span className="sr-only">Mã số sinh viên: </span>
             {student.studentCode}
+          </p>
+          <p className={styles.studentSession}>
+            <span className={styles.studentSessionLabel}>Phiên trao bằng</span>
+            <strong className={styles.studentSessionValue}>
+              {student.sessionLabel ?? copy.updating}
+            </strong>
           </p>
           <StudentInfoCard student={student} />
           <div className={styles.emailRow}>
@@ -94,7 +95,7 @@ export function StudentResult({
           </div>
         </div>
         <LedPreview
-          key={`${student.studentCode}-${student.ledImageUrl ?? student.ledImageStatus}`}
+          key={`${student.studentCode}-${student.ledExternalUrl ?? student.ledImageUrl ?? student.ledImageStatus}`}
           student={student}
           correctionFormUrl={correctionFormUrl}
         />

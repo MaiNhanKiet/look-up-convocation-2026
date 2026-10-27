@@ -65,11 +65,6 @@ export async function issueLedImageAccess(
     const access = await resolveLedImageAccess(objectKey, {
       env: process.env,
       now: Date.now(),
-      signPublicUrl: async (endpoint, key, expiresSeconds) => {
-        const publicClient = clientFor(endpoint);
-        if (!publicClient) throw new Error("minio_unconfigured");
-        return publicClient.presignedGetObject(bucket, key, expiresSeconds);
-      },
     });
     return access
       ? { status: "ready", ...access }
@@ -89,15 +84,24 @@ function isMissingObject(error: unknown): boolean {
   return code === "NoSuchKey" || code === "NotFound" || code === "NoSuchBucket";
 }
 
+const IMAGE_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+]);
+
 function contentTypeFrom(stat: { metaData?: Record<string, string> }, objectKey: string): string {
   const metadata = stat.metaData ?? {};
   const stored = metadata["content-type"] || metadata["Content-Type"];
-  if (stored && !stored.toLowerCase().includes("html")) return stored;
+  const normalized = stored?.split(";")[0]?.trim().toLowerCase();
+  if (normalized && IMAGE_TYPES.has(normalized)) return normalized;
 
   const extension = objectKey.split(".").pop()?.toLowerCase();
   if (extension === "webp") return "image/webp";
   if (extension === "png") return "image/png";
   if (extension === "jpg" || extension === "jpeg") return "image/jpeg";
+  if (extension === "gif") return "image/gif";
   return "application/octet-stream";
 }
 

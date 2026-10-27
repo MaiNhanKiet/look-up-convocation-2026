@@ -46,19 +46,59 @@ const micra = localFont({
   adjustFontFallback: "Arial",
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+const ogImage = {
+  // JPEG is preferred by Facebook scrapers; keep a cache-busting query.
+  url: "/images/og-convocation.jpg?v=20261027",
+  secureUrl: "/images/og-convocation.jpg?v=20261027",
+  type: "image/jpeg",
+  width: 1200,
+  height: 630,
+  alt: "Graduation Ceremony 2026 — FPT University HCMC",
+} as const;
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  ),
-  title: "FPTU Convocation Day 2026",
-  description:
-    "Tra cứu thông tin tham dự lễ tốt nghiệp FPTU Convocation Day 2026 bằng mã số sinh viên.",
+  metadataBase: new URL(siteUrl),
+  title: "Graduation Ceremony 2026",
+  description: "Tra cứu thông tin tham dự lễ tốt nghiệp FPTU HCMC",
+  applicationName: "Graduation Ceremony 2026",
+  alternates: {
+    canonical: "/",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Graduation 2026",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [{ url: "/favicon.ico", sizes: "any" }],
+    apple: [
+      {
+        url: "/images/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
   openGraph: {
-    title: "FPTU Convocation Day 2026",
-    description:
-      "Tra cứu thông tin tham dự lễ tốt nghiệp bằng mã số sinh viên.",
+    title: "Graduation Ceremony 2026",
+    description: "Tra cứu thông tin tham dự lễ tốt nghiệp FPTU HCMC.",
+    url: "/",
+    siteName: "Graduation Ceremony 2026",
     locale: "vi_VN",
     type: "website",
+    images: [ogImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Graduation Ceremony 2026",
+    description: "Tra cứu thông tin tham dự lễ tốt nghiệp FPTU HCMC.",
+    images: [ogImage.url],
   },
 };
 
@@ -66,6 +106,7 @@ export const viewport: Viewport = {
   themeColor: "#F8F5EF",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

@@ -4,12 +4,13 @@ import { headers } from "next/headers";
 
 import { createLookupDependencies } from "@/lib/lookup/dependencies";
 import { performLookup } from "@/lib/lookup/perform-lookup";
-import type { LookupResponse } from "@/lib/types/student";
+import { sealJson, type SealedEnvelope } from "@/lib/security/sealed-payload";
 
 export async function lookupStudent(input: {
   studentCode: string;
   turnstileToken?: string;
-}): Promise<LookupResponse> {
+  clientPublicKey: string;
+}): Promise<SealedEnvelope> {
   const incoming = await headers();
   const requestHeaders = new Headers({ "content-type": "application/json" });
   const forwarded = incoming.get("x-forwarded-for");
@@ -30,5 +31,5 @@ export async function lookupStudent(input: {
     request,
     createLookupDependencies(request),
   );
-  return outcome.body;
+  return sealJson(outcome.body, input.clientPublicKey);
 }

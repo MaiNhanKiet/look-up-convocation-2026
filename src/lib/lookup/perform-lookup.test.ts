@@ -13,8 +13,11 @@ const student: StudentRow = {
   email: "an.nguyen@fpt.edu.vn",
   seat_tcn: "A-12",
   seat_ph2: null,
-  checkin_zone: "  ",
-  checkin_waiting_room: " P.101 ",
+  checkin_time: " 07:00 ",
+  checkin_room: " P.101 ",
+  award_time: " 08:30 ",
+  contact_group: " https://example.com/nhom-lien-lac-01 ",
+  invitation_link: " https://example.com/thu-moi/HE123456 ",
   led_image_key: "HE123456.jpg",
   session_label: "Đợt 1",
 };
@@ -57,8 +60,17 @@ describe("performLookup", () => {
     assert.equal(outcome.body.student.emailRevealable, false);
     assert.equal(outcome.body.student.seatTcn, "A-12");
     assert.equal(outcome.body.student.seatPh2, null);
-    assert.equal(outcome.body.student.checkinZone, null);
-    assert.equal(outcome.body.student.checkinWaitingRoom, "P.101");
+    assert.equal(outcome.body.student.checkinTime, "07:00");
+    assert.equal(outcome.body.student.checkinRoom, "P.101");
+    assert.equal(outcome.body.student.awardTime, "08:30");
+    assert.equal(
+      outcome.body.student.contactGroup,
+      "https://example.com/nhom-lien-lac-01",
+    );
+    assert.equal(
+      outcome.body.student.invitationLink,
+      "https://example.com/thu-moi/HE123456",
+    );
     assert.equal(outcome.body.student.ledImageStatus, "ready");
     assert.equal(outcome.body.student.ledImageExpiresAt, 1_700_000_000_000);
     assert.equal(JSON.stringify(outcome.body).includes("HE123456.jpg"), false);
@@ -165,17 +177,56 @@ describe("performLookup", () => {
     if (!outcome.body.ok) assert.equal(outcome.body.error.code, "UNAVAILABLE");
   });
 
-  it("marks an unsafe led path as unavailable and still returns the student", async () => {
+  it("returns an openable link when the led value is an http address", async () => {
+    let signed = false;
     const outcome = await performLookup(
       post({ studentCode: "HE123456" }),
       deps({
-        findStudent: async () => ({ ...student, led_image_key: "https://cdn.example/a.jpg" }),
+        findStudent: async () => ({
+          ...student,
+          led_image_key: " https://cdn.example/a.jpg ",
+        }),
+        signLedImage: async () => {
+          signed = true;
+          return { status: "missing" };
+        },
       }),
     );
     assert.equal(outcome.status, 200);
     if (!outcome.body.ok) return;
+    assert.equal(outcome.body.student.ledExternalUrl, "https://cdn.example/a.jpg");
+    assert.equal(outcome.body.student.ledImageUrl, null);
+    assert.equal(outcome.body.student.ledImageStatus, "missing");
+    assert.equal(signed, false);
+  });
+
+  it("marks an unsafe led path as unavailable and still returns the student", async () => {
+    const outcome = await performLookup(
+      post({ studentCode: "HE123456" }),
+      deps({
+        findStudent: async () => ({ ...student, led_image_key: "javascript:alert(1)" }),
+      }),
+    );
+    assert.equal(outcome.status, 200);
+    if (!outcome.body.ok) return;
+    assert.equal(outcome.body.student.ledExternalUrl, null);
     assert.equal(outcome.body.student.ledImageStatus, "unavailable");
     assert.equal(outcome.body.student.ledImageUrl, null);
+  });
+
+  it("does not expose an unsafe invitation link", async () => {
+    const outcome = await performLookup(
+      post({ studentCode: "HE123456" }),
+      deps({
+        findStudent: async () => ({
+          ...student,
+          invitation_link: "javascript:alert(1)",
+        }),
+      }),
+    );
+    assert.equal(outcome.status, 200);
+    if (!outcome.body.ok) return;
+    assert.equal(outcome.body.student.invitationLink, null);
   });
 
   it("marks a database key missing from object storage as updating", async () => {
@@ -215,6 +266,20 @@ describe("migration contract", () => {
     assert.equal(/supabase/i.test(sql), false);
   });
 
+  it("allows five-digit codes when the first digit is 5–9", () => {
+    const shortCode = readFileSync(
+      new URL(
+        "../../../prisma/migrations/20261027110000_allow_short_student_code/migration.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    assert.match(
+      shortCode,
+      /"student_code" ~ '\^\[HQDSC\]\[EAS\]\(\[0-9\]\{6\}\|\[5-9\]\[0-9\]\{4\}\)\$'/,
+    );
+  });
+
   it("renames the led object column without storing signed urls", () => {
     const rename = readFileSync(
       new URL(
@@ -225,5 +290,33 @@ describe("migration contract", () => {
     );
     assert.match(rename, /RENAME COLUMN "led_image_path" TO "led_image_key"/);
     assert.equal(/presign|http/i.test(rename), false);
+  });
+
+  it("replaces obsolete check-in columns without losing room data", () => {
+    const ceremonyDetails = readFileSync(
+      new URL(
+        "../../../prisma/migrations/20261026110000_update_ceremony_details/migration.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    assert.match(
+      ceremonyDetails,
+      /RENAME COLUMN "checkin_waiting_room" TO "checkin_room"/,
+    );
+    assert.match(ceremonyDetails, /DROP COLUMN "checkin_zone"/);
+    assert.match(ceremonyDetails, /ADD COLUMN "checkin_time" TEXT/);
+    assert.match(ceremonyDetails, /ADD COLUMN "contact_group" TEXT/);
+  });
+
+  it("adds the diploma presentation time", () => {
+    const awardTime = readFileSync(
+      new URL(
+        "../../../prisma/migrations/20261026123000_add_award_time/migration.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    assert.match(awardTime, /ADD COLUMN "award_time" TEXT/);
   });
 });

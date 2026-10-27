@@ -1,11 +1,21 @@
 "use client";
 
-import { ArrowUpRight, ImageOff, Maximize2, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  ExternalLink,
+  ImageOff,
+  Maximize2,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { copy } from "@/lib/copy";
 import { refreshLedImage } from "@/lib/lookup/refresh-led-image";
-import type { PublicStudent } from "@/lib/types/student";
+import {
+  createClientKeyPair,
+  openSealedJson,
+} from "@/lib/security/sealed-payload";
+import type { LedImageRefresh, PublicStudent } from "@/lib/types/student";
 import styles from "./ceremony.module.css";
 
 export function LedPreview({
@@ -25,24 +35,35 @@ export function LedPreview({
   const failedOnce = useRef(false);
   const failed = student.ledImageStatus === "unavailable" || phase === "error";
 
-  const renew = useCallback(async (fromError: boolean) => {
-    if (renewing.current) return;
-    renewing.current = true;
-    try {
-      const next = await refreshLedImage(student.studentCode);
-      if (!next.ok) {
+  const renew = useCallback(
+    async (fromError: boolean) => {
+      if (renewing.current) return;
+      renewing.current = true;
+      try {
+        const channel = await createClientKeyPair();
+        const sealed = await refreshLedImage({
+          studentCode: student.studentCode,
+          clientPublicKey: channel.publicKey,
+        });
+        const next = await openSealedJson<LedImageRefresh>(
+          sealed,
+          channel.privateKey,
+        );
+        if (!next.ok) {
+          if (fromError) setPhase("error");
+          return;
+        }
+        setImageUrl(next.ledImageUrl);
+        setExpiresAt(next.ledImageExpiresAt);
+        setPhase("loading");
+      } catch {
         if (fromError) setPhase("error");
-        return;
+      } finally {
+        renewing.current = false;
       }
-      setImageUrl(next.ledImageUrl);
-      setExpiresAt(next.ledImageExpiresAt);
-      setPhase("loading");
-    } catch {
-      if (fromError) setPhase("error");
-    } finally {
-      renewing.current = false;
-    }
-  }, [student.studentCode]);
+    },
+    [student.studentCode],
+  );
 
   useEffect(() => {
     if (expiresAt == null || !imageUrl) return;
@@ -169,60 +190,121 @@ export function LedPreview({
 
   useEffect(() => releaseScroll, []);
 
+  const bothLinks = Boolean(student.invitationLink && student.ledExternalUrl);
+  const invitation = (
+    <div className={styles.invitationCell}>
+      <span className={styles.invitationCellLabel}>Thư mời</span>
+      {student.invitationLink ? (
+        <a
+          className={styles.invitationButton}
+          href={student.invitationLink}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Mở thư mời
+          <ExternalLink size={15} strokeWidth={1.8} aria-hidden="true" />
+        </a>
+      ) : (
+        <span className={styles.invitationUnavailable}>{copy.updating}</span>
+      )}
+    </div>
+  );
+  const ledLink = student.ledExternalUrl ? (
+    <div className={styles.ledLinkRow}>
+      <span className={styles.invitationCellLabel}>Hình LED</span>
+      <a
+        className={styles.ledExternalButton}
+        href={student.ledExternalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Mở hình LED
+        <ExternalLink size={15} strokeWidth={1.8} aria-hidden="true" />
+      </a>
+    </div>
+  ) : null;
+
   return (
-    <figure className={styles.ledSection}>
-      <figcaption className={styles.ledCaption}>
-        <span>HÌNH LED</span>
-        <span className={styles.previewLabel}>BẢN XEM TRƯỚC</span>
-      </figcaption>
-      <div className={styles.previewMedia}>
-        {imageUrl && phase !== "error" ? (
-          <>
-            {phase === "loading" ? (
-              <p className={styles.imageLoading} role="status">
-                Đang tải hình LED…
-              </p>
-            ) : null}
-            <button
-              type="button"
-              className={styles.ledOpen}
-              disabled={phase !== "ready"}
-              aria-label={`Xem hình LED của ${student.fullName} ở kích thước lớn`}
-              onClick={openLed}
-            >
-              <Image
-                src={imageUrl}
-                alt=""
-                fill
-                unoptimized
-                loading="eager"
-                referrerPolicy="no-referrer"
-                className={styles.ledImage}
-                onLoad={(event) => {
-                  thumbRef.current = event.currentTarget;
-                  setPhase("ready");
-                }}
-                onError={onImageError}
-              />
-            </button>
-          </>
-        ) : (
-          <div className={styles.imageFallback}>
-            <ImageOff size={25} strokeWidth={1.2} aria-hidden="true" />
-            <p>
-              {failed
-                ? "Không thể hiển thị hình LED"
-                : copy.updating}
-            </p>
-            <span>
-              {failed
-                ? "Bạn có thể tra cứu lại sau."
-                : "Hình sẽ hiển thị khi được cập nhật."}
-            </span>
-          </div>
-        )}
-      </div>
-      {imageUrl && phase !== "error" ? (
+    <figure
+      className={styles.ledSection}
+      data-compact={student.ledExternalUrl && !bothLinks ? "true" : undefined}
+      data-split={bothLinks ? "true" : undefined}
+    >
+      {bothLinks ? (
+        <div className={styles.linkSplit}>
+          {invitation}
+          {ledLink}
+        </div>
+      ) : (
+        <>
+          {invitation}
+          {ledLink ?? (
+            <>
+              <figcaption className={styles.ledCaption}>
+                <span>HÌNH LED</span>
+              </figcaption>
+              <div className={styles.previewMedia}>
+                {imageUrl && phase !== "error" ? (
+                  <>
+                    {phase === "loading" ? (
+                      <div
+                        className={styles.imageSkeleton}
+                        role="status"
+                        aria-live="polite"
+                        aria-label="Đang tải hình LED"
+                      >
+                        <span className={styles.imageSkeletonShimmer} />
+                        <span className="sr-only">Đang tải hình LED…</span>
+                      </div>
+                    ) : null}
+                    <button
+                      type="button"
+                      className={styles.ledOpen}
+                      data-ready={phase === "ready" ? "true" : "false"}
+                      disabled={phase !== "ready"}
+                      aria-label={`Xem hình LED của ${student.fullName} ở kích thước lớn`}
+                      onClick={openLed}
+                    >
+                      <Image
+                        src={imageUrl}
+                        alt=""
+                        fill
+                        unoptimized
+                        loading="eager"
+                        referrerPolicy="no-referrer"
+                        className={styles.ledImage}
+                        onLoad={(event) => {
+                          const image = event.currentTarget;
+                          thumbRef.current = image;
+                          const frame = image.closest("button");
+                          if (
+                            frame instanceof HTMLElement &&
+                            image.naturalWidth > 0 &&
+                            image.naturalHeight > 0
+                          ) {
+                            frame.style.aspectRatio = `${image.naturalWidth} / ${image.naturalHeight}`;
+                          }
+                          setPhase("ready");
+                        }}
+                        onError={onImageError}
+                      />
+                    </button>
+                  </>
+                ) : (
+                  <div className={styles.imageFallback}>
+                    <ImageOff size={25} strokeWidth={1.2} aria-hidden="true" />
+                    <p>
+                      {failed ? "Hình LED đang được cập nhật" : copy.updating}
+                    </p>
+                    <span>{failed && "Bạn có thể tra cứu lại sau."}</span>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </>
+      )}
+      {imageUrl && !student.ledExternalUrl && phase !== "error" ? (
         <button
           type="button"
           className={styles.previewButton}
@@ -235,11 +317,14 @@ export function LedPreview({
           Xem kích thước lớn <Maximize2 size={15} aria-hidden="true" />
         </button>
       ) : null}
-      <div className={styles.ledFooter}>
+      <div
+        className={styles.ledFooter}
+        data-align={correctionFormUrl ? undefined : "center"}
+      >
         <p className={styles.ledNote}>
-          Hãy dành chút thời gian kiểm tra thông tin.
+          Mong bạn hãy dành chút thời gian kiểm tra thông tin nhé.
           {correctionFormUrl
-            ? " Nếu cần điều chỉnh, bạn có thể gửi yêu cầu ngay bên cạnh."
+            ? " Nếu có sai sót, bạn có thể gửi yêu cầu điều chỉnh ngay bên cạnh."
             : null}
         </p>
         {correctionFormUrl ? (
@@ -249,7 +334,7 @@ export function LedPreview({
             target="_blank"
             rel="noopener noreferrer"
           >
-            Gửi yêu cầu chỉnh sửa
+            Gửi yêu cầu
             <ArrowUpRight size={15} aria-hidden="true" />
           </a>
         ) : null}

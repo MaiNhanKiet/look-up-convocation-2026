@@ -14,8 +14,11 @@ model Student {
   email              String?
   seatTcn            String?  @map("seat_tcn")
   seatPh2            String?  @map("seat_ph2")
-  checkinZone        String?  @map("checkin_zone")
-  checkinWaitingRoom String?  @map("checkin_waiting_room")
+  checkinTime        String?  @map("checkin_time")
+  checkinRoom        String?  @map("checkin_room")
+  awardTime          String?  @map("award_time")
+  contactGroup       String?  @map("contact_group")
+  invitationLink     String?  @map("invitation_link")
   ledImageKey        String?  @map("led_image_key")
   sessionLabel       String?  @map("session_label")
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)

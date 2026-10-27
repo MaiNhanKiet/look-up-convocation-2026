@@ -1,7 +1,7 @@
 export const copy = {
   updating: "Đang cập nhật",
   emptyCode: "Vui lòng nhập mã số sinh viên.",
-  invalidCode: "MSSV sai định dạng. Ví dụ SE180001",
+  invalidCode: "MSSV sai định dạng. Hãy thử lại nhé.",
   invalidPayload: "Dữ liệu gửi lên không hợp lệ.",
   notFound:
     "Chưa tìm thấy thông tin của bạn. Hãy kiểm tra lại mã số sinh viên nhé.",

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
+  clientAddress,
   consumeMemoryQuota,
   hashRateLimitKey,
   resetMemoryRateLimits,
@@ -39,5 +40,20 @@ describe("memory rate limit", () => {
       hashRateLimitKey(address),
       hashRateLimitKey(address, "lookup"),
     );
+  });
+
+  it("ignores a spoofed forwarding header unless the proxy is trusted", () => {
+    const previous = process.env.TRUST_PROXY;
+    delete process.env.TRUST_PROXY;
+    const request = new Request("http://localhost/api/students/lookup", {
+      headers: { "x-forwarded-for": "203.0.113.8, 198.51.100.4" },
+    });
+    assert.equal(clientAddress(request), "unknown");
+
+    process.env.TRUST_PROXY = "true";
+    assert.equal(clientAddress(request), "198.51.100.4");
+
+    if (previous === undefined) delete process.env.TRUST_PROXY;
+    else process.env.TRUST_PROXY = previous;
   });
 });

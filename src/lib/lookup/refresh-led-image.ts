@@ -4,21 +4,21 @@ import { headers } from "next/headers";
 
 import { createLookupDependencies } from "@/lib/lookup/dependencies";
 import { presentStudent } from "@/lib/lookup/perform-lookup";
-import type { LedImageStatus } from "@/lib/types/student";
+import { sealJson, type SealedEnvelope } from "@/lib/security/sealed-payload";
+import type { LedImageRefresh } from "@/lib/types/student";
 import { parseStudentCode } from "@/lib/validators/student";
 
-export type LedImageRefresh =
-  | {
-      ok: true;
-      ledImageUrl: string;
-      ledImageExpiresAt: number;
-      ledImageStatus: "ready";
-    }
-  | { ok: false; ledImageStatus: Exclude<LedImageStatus, "ready"> };
-
-export async function refreshLedImage(studentCode: string): Promise<LedImageRefresh> {
-  const parsed = parseStudentCode(studentCode);
-  if (!parsed.ok) return { ok: false, ledImageStatus: "unavailable" };
+export async function refreshLedImage(input: {
+  studentCode: string;
+  clientPublicKey: string;
+}): Promise<SealedEnvelope> {
+  const parsed = parseStudentCode(input.studentCode);
+  if (!parsed.ok) {
+    return sealJson(
+      { ok: false, ledImageStatus: "unavailable" } satisfies LedImageRefresh,
+      input.clientPublicKey,
+    );
+  }
 
   const incoming = await headers();
   const requestHeaders = new Headers();
@@ -33,15 +33,28 @@ export async function refreshLedImage(studentCode: string): Promise<LedImageRefr
   });
   const deps = createLookupDependencies(request, "led-image-refresh");
   if (deps.source === "unconfigured") {
-    return { ok: false, ledImageStatus: "unavailable" };
+    return sealJson(
+      { ok: false, ledImageStatus: "unavailable" } satisfies LedImageRefresh,
+      input.clientPublicKey,
+    );
   }
 
   try {
     const quota = await deps.rateLimit(deps.clientKey);
-    if (!quota.allowed) return { ok: false, ledImageStatus: "unavailable" };
+    if (!quota.allowed) {
+      return sealJson(
+        { ok: false, ledImageStatus: "unavailable" } satisfies LedImageRefresh,
+        input.clientPublicKey,
+      );
+    }
 
     const row = await deps.findStudent(parsed.code);
-    if (!row) return { ok: false, ledImageStatus: "missing" };
+    if (!row) {
+      return sealJson(
+        { ok: false, ledImageStatus: "missing" } satisfies LedImageRefresh,
+        input.clientPublicKey,
+      );
+    }
 
     const student = await presentStudent(row, {
       emailMode: deps.emailMode,
@@ -54,19 +67,29 @@ export async function refreshLedImage(studentCode: string): Promise<LedImageRefr
       !student.ledImageUrl ||
       student.ledImageExpiresAt == null
     ) {
-      return {
-        ok: false,
-        ledImageStatus: student.ledImageStatus === "missing" ? "missing" : "unavailable",
-      };
+      return sealJson(
+        {
+          ok: false,
+          ledImageStatus:
+            student.ledImageStatus === "missing" ? "missing" : "unavailable",
+        } satisfies LedImageRefresh,
+        input.clientPublicKey,
+      );
     }
 
-    return {
-      ok: true,
-      ledImageUrl: student.ledImageUrl,
-      ledImageExpiresAt: student.ledImageExpiresAt,
-      ledImageStatus: "ready",
-    };
+    return sealJson(
+      {
+        ok: true,
+        ledImageUrl: student.ledImageUrl,
+        ledImageExpiresAt: student.ledImageExpiresAt,
+        ledImageStatus: "ready",
+      } satisfies LedImageRefresh,
+      input.clientPublicKey,
+    );
   } catch {
-    return { ok: false, ledImageStatus: "unavailable" };
+    return sealJson(
+      { ok: false, ledImageStatus: "unavailable" } satisfies LedImageRefresh,
+      input.clientPublicKey,
+    );
   }
 }

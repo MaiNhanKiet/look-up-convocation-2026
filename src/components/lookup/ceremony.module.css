@@ -39,6 +39,8 @@
   position: relative;
   min-width: 0;
   padding-top: 8px;
+  container-type: inline-size;
+  container-name: hero;
 }
 .eventIdentity {
   font-family: var(--font-editorial);
@@ -63,11 +65,13 @@
 .eventTitleLine {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 0;
   margin-top: 4px;
   color: var(--color-brand-deep);
-  font-size: 1.72em;
+  font-size: clamp(46px, 18cqi, 1.72em);
   font-style: italic;
+  letter-spacing: -0.05em;
   line-height: 1.05;
 }
 .titleDot {
@@ -677,10 +681,10 @@
   line-height: 1.4;
   letter-spacing: -0.045em;
   overflow-wrap: anywhere;
-  scroll-margin-top: 28px;
 }
+.studentName:focus,
 .studentName:focus-visible {
-  outline-offset: 5px;
+  outline: none;
 }
 .studentCode {
   margin-top: 9px;
@@ -688,6 +692,88 @@
   font-size: 15px;
   letter-spacing: 0.12em;
   color: var(--color-muted);
+}
+.studentSession {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 20px 0 0;
+  padding: 0 0 0 12px;
+  border-left: 2px solid var(--color-brand);
+}
+.studentSessionLabel {
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.studentSessionValue {
+  color: var(--color-ink);
+  font-family: var(--font-editorial);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.invitationCell,
+.ledLinkRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 54px;
+  margin-bottom: 16px;
+  padding: 0 2px 14px;
+  border-bottom: 1px solid #e3d6c6;
+}
+.invitationCellLabel {
+  color: var(--color-muted);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.invitationButton,
+.ledExternalButton,
+.contactButton,
+.correctionButton {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-brand);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-brand-ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+.invitationButton:hover,
+.ledExternalButton:hover,
+.contactButton:hover,
+.correctionButton:hover {
+  background: var(--ceremony-orange-wash);
+}
+.invitationButton:focus-visible,
+.ledExternalButton:focus-visible,
+.contactButton:focus-visible,
+.correctionButton:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+.invitationUnavailable {
+  color: var(--color-muted);
+  font-size: 14px;
 }
 .attendance {
   margin-top: 28px;
@@ -720,7 +806,7 @@
 }
 .attendanceRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
   padding-top: 22px;
 }
@@ -728,11 +814,26 @@
   min-width: 0;
 }
 .attendanceValue {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
   margin-top: 8px;
   font-size: 18px;
   line-height: 1.5;
   font-weight: 500;
   overflow-wrap: anywhere;
+}
+.attendanceAction {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  margin-top: 8px;
+}
+.attendanceAction .missingValue {
+  margin-top: 0;
+}
+.contactButton {
+  margin-top: 0;
 }
 .missingValue {
   margin-top: 8px;
@@ -824,11 +925,43 @@
   opacity: 0;
 }
 .ledSection {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   margin: 0;
-  padding: 30px;
+  padding: 22px 24px 18px;
   border-left: 1px dashed #c9bca7;
   background: #f5f1e9;
+}
+.ledSection[data-compact="true"] {
+  align-self: start;
+}
+.ledSection[data-split="true"] {
+  align-self: stretch;
+  height: 100%;
+}
+.linkSplit {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+.linkSplit .invitationCell,
+.linkSplit .ledLinkRow {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 0;
+  margin-bottom: 0;
+  padding: 0;
+  border-bottom: 0;
+  text-align: center;
+}
+.linkSplit .ledLinkRow {
+  border-left: 1px solid #e3d6c6;
 }
 .ledCaption {
   display: flex;
@@ -843,13 +976,14 @@
   font-size: 11px;
   letter-spacing: 0.04em;
 }
+.ledExternalButton {
+  margin-top: 0;
+}
 .previewMedia {
   position: relative;
   display: grid;
-  place-items: center;
-  aspect-ratio: 16/10;
-  margin-top: 22px;
-  padding: 8px;
+  margin-top: 14px;
+  padding: 6px;
   border: 1px solid #d6cbbb;
   background: var(--color-paper);
 }
@@ -875,10 +1009,11 @@
   border-bottom: 1px solid;
 }
 .ledOpen {
-  position: absolute;
-  inset: 8px;
-  width: calc(100% - 16px);
-  height: calc(100% - 16px);
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
   padding: 0;
   border: 0;
   background: transparent;
@@ -887,22 +1022,50 @@
 .ledOpen:disabled {
   cursor: default;
 }
+.ledOpen[data-ready="false"] .ledImage {
+  opacity: 0;
+}
+.ledOpen[data-ready="true"] .ledImage {
+  opacity: 1;
+}
 .ledImage {
   width: 100%;
   height: 100%;
   object-fit: contain;
   pointer-events: none;
+  transition: opacity 0.45s var(--ceremony-ease);
 }
-.imageLoading {
+.imageSkeleton {
   position: absolute;
-  font-size: 14px;
-  color: var(--color-muted);
+  inset: 6px;
+  z-index: 0;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  background:
+    linear-gradient(180deg, #efe8dc 0%, #e7dece 55%, #efe8dc 100%);
+}
+.imageSkeletonShimmer {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 38%,
+    rgb(255 253 249 / 0.55) 50%,
+    transparent 62%,
+    transparent 100%
+  );
+  animation: led-skeleton-shimmer 1.45s ease-in-out infinite;
 }
 .imageFallback {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+  width: 100%;
+  aspect-ratio: 16/9;
   text-align: center;
   padding: 12px;
   color: var(--color-muted);
@@ -913,7 +1076,7 @@
 .imageFallback > span {
   font-size: 13px;
   line-height: 1.7;
-  white-space: nowrap;
+  text-wrap: pretty;
 }
 .previewButton {
   display: flex;
@@ -921,7 +1084,7 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  min-height: 46px;
+  min-height: 40px;
   border-bottom: 1px solid var(--color-line);
   color: var(--color-brand-ink);
   font-size: 14px;
@@ -935,46 +1098,32 @@
 }
 .ledFooter {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   gap: 14px 18px;
+  min-height: 84px;
   margin-top: 16px;
 }
+.ledFooter[data-align="center"] {
+  justify-content: center;
+}
 .ledNote {
-  flex: 1 1 180px;
+  flex: 1 1 160px;
+  min-width: 0;
   margin: 0;
   color: var(--color-muted);
   font-size: 13px;
-  line-height: 1.85;
+  line-height: 1.6;
   text-align: justify;
   text-wrap: pretty;
 }
+.ledFooter[data-align="center"] .ledNote {
+  text-align: center;
+}
 .correctionButton {
-  display: inline-flex;
-  flex: 0 0 auto;
-  margin-left: auto;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--color-brand);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--color-brand-ink);
-  font-size: 14px;
-  text-decoration: none;
-  white-space: nowrap;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-.correctionButton:hover {
-  background: var(--ceremony-orange-wash);
-}
-.correctionButton:focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 3px;
+  flex: none;
+  align-self: center;
 }
 .ledDialog {
   max-width: calc(100vw - 32px);
@@ -1189,6 +1338,14 @@
     opacity: 0;
   }
 }
+@keyframes led-skeleton-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
 @keyframes details-enter {
   from {
     opacity: 0.65;
@@ -1251,7 +1408,21 @@
     padding-inline: 28px;
   }
   .ledSection {
-    padding: 26px 22px;
+    padding: 22px 20px 18px;
+  }
+  .invitationCell,
+  .ledLinkRow {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .invitationButton,
+  .ledExternalButton {
+    align-self: flex-end;
+  }
+  .linkSplit .invitationButton,
+  .linkSplit .ledExternalButton {
+    align-self: center;
   }
 }
 @media (max-width: 850px) {
@@ -1306,11 +1477,13 @@
   .seatValue {
     font-size: 29px;
   }
-  .seatRow {
+  .seatRow,
+  .attendanceRow {
     grid-template-columns: 1fr;
     gap: 0;
   }
-  .seatRow > div + div {
+  .seatRow > div + div,
+  .attendanceRow > div + div {
     margin-top: 18px;
     padding-top: 18px;
     padding-left: 0;
@@ -1329,10 +1502,7 @@
     flex-direction: column;
   }
   .dialogImage {
-    width: min(
-      calc(100vw - 32px),
-      calc(min(100dvh - 120px, 800px) * 16 / 9)
-    );
+    width: min(calc(100vw - 32px), calc(min(100dvh - 120px, 800px) * 16 / 9));
     max-height: min(calc(100dvh - 120px), 800px);
   }
   .experience {
@@ -1354,15 +1524,13 @@
     position: relative;
     z-index: 1;
     margin-top: 26px;
-    font-size: clamp(38px, 10vw, 48px);
-  }
-  .eventTitleLine {
-    font-size: 1.55em;
+    font-size: clamp(34px, 9vw, 44px);
   }
   .eventYear {
-    margin-left: 24px;
-    padding-left: 22px;
-    font-size: 16px;
+    margin-left: 12px;
+    padding-left: 12px;
+    font-size: 14px;
+    line-height: 1.45;
   }
   .artwork {
     position: absolute;
@@ -1472,25 +1640,51 @@
     margin-top: 22px;
   }
   .ledSection {
-    padding: 24px;
+    height: auto;
+    padding: 20px 18px 16px;
     border-left: 0;
     border-top: 1px dashed #c9bca7;
   }
-  .previewLabel {
-    display: block;
+  .ledSection[data-split="true"] {
+    height: auto;
+  }
+  .linkSplit {
+    flex: none;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .linkSplit .invitationCell,
+  .linkSplit .ledLinkRow {
+    gap: 10px;
+    padding: 4px 0 16px;
+  }
+  .linkSplit .ledLinkRow {
+    border-left: 0;
+    border-top: 1px solid #e3d6c6;
+    padding-top: 16px;
   }
   .ledFooter {
-    align-items: stretch;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    margin-top: 4px;
     gap: 12px;
   }
   .ledNote {
     flex: none;
+    width: 100%;
     font-size: 14px;
+    text-align: center;
   }
   .correctionButton {
-    align-self: flex-end;
-    margin-left: 0;
+    align-self: center;
+  }
+  .previewLabel {
+    display: block;
+  }
+  .ledNote {
+    font-size: 14px;
   }
   .previewMedia {
     margin-top: 16px;
@@ -1528,7 +1722,8 @@
   .pointerHead,
   .mottoLine,
   .attendance,
-  .shake {
+  .shake,
+  .imageSkeletonShimmer {
     animation: none;
   }
   .inputFrame,
@@ -1539,11 +1734,30 @@
   .emailToggleIcons > svg,
   .repeatingArtwork,
   .previewButton,
+  .correctionButton,
+  .ledImage {
+    transition: none;
+  }
+  .invitationButton,
+  .ledExternalButton,
+  .contactButton,
   .correctionButton {
     transition: none;
   }
   .submit:hover:not(:disabled) > svg,
   .submit:active:not(:disabled) {
     transform: none;
+  }
+}
+@container hero (max-width: 420px) {
+  .eventTitleLine {
+    font-size: clamp(40px, 14.5cqi, 56px);
+    letter-spacing: -0.04em;
+  }
+  .eventYear {
+    margin-left: 8px;
+    padding-left: 10px;
+    font-size: 13px;
+    line-height: 1.35;
   }
 }

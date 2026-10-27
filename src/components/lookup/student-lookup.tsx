@@ -17,8 +17,15 @@ import { StudentResult } from "@/components/lookup/student-result";
 import { TurnstileWidget } from "@/components/lookup/turnstile-widget";
 import { copy } from "@/lib/copy";
 import { lookupStudent } from "@/lib/lookup/lookup-student";
-import type { PublicStudent } from "@/lib/types/student";
-import { parseStudentCode } from "@/lib/validators/student";
+import {
+  createClientKeyPair,
+  openSealedJson,
+} from "@/lib/security/sealed-payload";
+import type { LookupResponse, PublicStudent } from "@/lib/types/student";
+import {
+  parseStudentCode,
+  STUDENT_CODE_PATTERN,
+} from "@/lib/validators/student";
 import styles from "./ceremony.module.css";
 
 const CODE_SLOTS = [
@@ -87,6 +94,9 @@ function plainStudentCode(value: string): string {
 
 function formatIssue(value: string): boolean {
   if (!value) return false;
+  if (value.length === 7 || value.length === 8) {
+    return !STUDENT_CODE_PATTERN.test(value);
+  }
   return [...value].some((char, index) => !CODE_SLOTS[index]?.test(char));
 }
 
@@ -148,16 +158,87 @@ export function StudentLookup({
   }, [lookupLocked, loading]);
 
   const followResultScroll = useRef(false);
+  const resultScrollTimer = useRef<number | null>(null);
+  const resultScrollFrame = useRef<number | null>(null);
+
+  function clearResultScroll() {
+    if (resultScrollTimer.current != null) {
+      window.clearTimeout(resultScrollTimer.current);
+      resultScrollTimer.current = null;
+    }
+    if (resultScrollFrame.current != null) {
+      window.cancelAnimationFrame(resultScrollFrame.current);
+      resultScrollFrame.current = null;
+    }
+  }
+
+  function easeOutCubic(t: number) {
+    return 1 - (1 - t) ** 3;
+  }
+
+  function animateScrollTo(targetTop: number, durationMs: number) {
+    const startTop = window.scrollY;
+    const distance = targetTop - startTop;
+    if (Math.abs(distance) < 2) return;
+
+    const startedAt = performance.now();
+
+    function step(now: number) {
+      const progress = Math.min(1, (now - startedAt) / durationMs);
+      window.scrollTo({
+        top: startTop + distance * easeOutCubic(progress),
+        behavior: "instant",
+      });
+      if (progress < 1) {
+        resultScrollFrame.current = window.requestAnimationFrame(step);
+        return;
+      }
+      resultScrollFrame.current = null;
+    }
+
+    resultScrollFrame.current = window.requestAnimationFrame(step);
+  }
 
   function scrollResultIntoView() {
     const node = resultRef.current;
     if (!node) return;
-    const top = node.getBoundingClientRect().top + window.scrollY - 28;
-    window.scrollTo({ top, behavior: "instant" });
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 680px)").matches;
+    const offset = mobile ? 16 : 28;
+    const targetTop = Math.max(
+      0,
+      node.getBoundingClientRect().top + window.scrollY - offset,
+    );
+
+    if (reduce) {
+      window.scrollTo({ top: targetTop, behavior: "auto" });
+      return;
+    }
+
+    animateScrollTo(targetTop, mobile ? 880 : 640);
   }
+
+  function scheduleResultScroll() {
+    if (!followResultScroll.current) return;
+    followResultScroll.current = false;
+    clearResultScroll();
+    const mobile = window.matchMedia("(max-width: 680px)").matches;
+    // Wait for keyboard dismiss + first paint of the result block.
+    const delay = mobile ? 220 : 48;
+    resultScrollTimer.current = window.setTimeout(() => {
+      resultScrollTimer.current = null;
+      requestAnimationFrame(() => scrollResultIntoView());
+    }, delay);
+  }
+
+  useEffect(() => {
+    return () => clearResultScroll();
+  }, []);
 
   function clearCode() {
     followResultScroll.current = false;
+    clearResultScroll();
     setStudent(null);
     updateCode("");
     inputRef.current?.focus({ preventScroll: true });
@@ -232,15 +313,23 @@ export function StudentLookup({
     setLookupLocked(false);
     setNotice(null);
     followResultScroll.current = false;
+    clearResultScroll();
     setStudent(null);
 
     try {
-      const payload = await lookupStudent({
+      const channel = await createClientKeyPair();
+      const sealed = await lookupStudent({
         studentCode: parsed.code,
+        clientPublicKey: channel.publicKey,
         ...(turnstileToken ? { turnstileToken } : {}),
       });
+      const payload = await openSealedJson<LookupResponse>(
+        sealed,
+        channel.privateKey,
+      );
       if (payload.ok) {
         followResultScroll.current = true;
+        inputRef.current?.blur();
         setStudent(payload.student);
         return;
       }
@@ -356,7 +445,7 @@ export function StudentLookup({
                       if (next === code) return;
                       updateCode(event.currentTarget.value);
                     }}
-                    placeholder="Ví dụ: SE180001"
+                    placeholder="Ví dụ: SE123456"
                     autoCapitalize="characters"
                     autoComplete="off"
                     autoCorrect="off"
@@ -520,16 +609,13 @@ export function StudentLookup({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              onUpdate={() => {
-                if (!followResultScroll.current) return;
-                scrollResultIntoView();
-              }}
+              onAnimationStart={scheduleResultScroll}
               onAnimationComplete={() => {
                 followResultScroll.current = false;
               }}
               transition={{
-                height: { duration: 0.95, ease: [0.28, 0.55, 0.22, 1] },
-                opacity: { duration: 0.45, ease },
+                height: { duration: 1.05, ease: [0.22, 0.7, 0.2, 1] },
+                opacity: { duration: 0.55, ease: [0.22, 0.7, 0.2, 1] },
               }}
             >
               <section

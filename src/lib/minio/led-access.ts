@@ -1,11 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-import {
-  hasMinioCredentials,
-  resolvePublicEndpoint,
-  type MinioEndpoint,
-  type MinioEnv,
-} from "@/lib/minio/endpoint";
+import { hasMinioCredentials, type MinioEnv } from "@/lib/minio/endpoint";
 import { isSafeLedPath } from "@/lib/security/led-path";
 
 export const LED_URL_TTL_SECONDS = 600;
@@ -24,7 +19,8 @@ type LedTokenClaims = {
 
 function tokenSecret(env: MinioEnv): string | null {
   const secret = env.RATE_LIMIT_SALT?.trim();
-  return secret || null;
+  if (!secret || secret === "development-salt") return null;
+  return secret;
 }
 
 function signPayload(payload: string, secret: string): string {
@@ -89,51 +85,22 @@ export function readLedViewToken(
   }
 }
 
-function signedHostMatches(url: string, endpoint: MinioEndpoint): boolean {
-  try {
-    const parsed = new URL(url);
-    const expectedPort = endpoint.port === 443 ? "" : String(endpoint.port);
-    return (
-      parsed.protocol === "https:" &&
-      parsed.hostname === endpoint.endPoint &&
-      parsed.port === expectedPort
-    );
-  } catch {
-    return false;
-  }
-}
-
 export async function resolveLedImageAccess(
   objectKey: string,
   options: {
     env: MinioEnv;
     now: number;
-    signPublicUrl?: (
-      endpoint: MinioEndpoint,
-      objectKey: string,
-      expiresSeconds: number,
-    ) => Promise<string>;
   },
 ): Promise<LedImageAccess | null> {
-  if (!hasMinioCredentials(options.env) || !isSafeLedPath(objectKey)) return null;
-
-  const publicEndpoint = resolvePublicEndpoint(options.env);
-  if (publicEndpoint && options.signPublicUrl) {
-    const signed = await options.signPublicUrl(
-      publicEndpoint,
-      objectKey,
-      LED_URL_TTL_SECONDS,
-    );
-    if (signedHostMatches(signed, publicEndpoint)) {
-      return {
-        url: signed,
-        expiresAt: options.now + LED_URL_TTL_SECONDS * 1000,
-      };
-    }
+  if (!hasMinioCredentials(options.env) || !isSafeLedPath(objectKey)) {
+    return null;
   }
 
   const issued = issueLedViewToken(objectKey, options.env, options.now);
   if (!issued) return null;
+
+  // Always proxy through the app so MinIO credentials never appear in the
+  // browser address bar when the image is opened in a new tab.
   return {
     url: `/api/led-image?token=${encodeURIComponent(issued.token)}`,
     expiresAt: issued.expiresAt,
