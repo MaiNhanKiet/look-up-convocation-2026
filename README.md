@@ -37,6 +37,19 @@ Sao chép `.env.example` thành `.env.local`.
 | `MAINTENANCE_MODE` | `true`, `1` hoặc `yes` giữ giao diện trang và thay ô tra cứu bằng thông báo bảo trì. |
 | `MAINTENANCE_REOPEN_AT` | Giờ mở lại theo giờ Việt Nam, dạng `HH-DD-MM-YYYY`. Ví dụ `13-25-10-2026` là 13:00 ngày 25/10/2026. Hết giờ này thì đồng hồ về 00. |
 | `CORRECTION_FORM_URL` | Link form `http` hoặc `https` của nút "Gửi yêu cầu chỉnh sửa". Để trống thì ẩn nút. |
+| `ADMIN_PASSWORD` | Mật khẩu trang quản trị `/admin` (tối thiểu 8 ký tự). Để trống thì tắt trang quản trị. |
+| `ADMIN_SESSION_SECRET` | Tuỳ chọn. Khoá ký cookie phiên quản trị; mặc định suy ra từ `ADMIN_PASSWORD`. |
+
+## Trang quản trị
+
+Truy cập `/admin` và đăng nhập bằng `ADMIN_PASSWORD` (phiên 12 giờ, cookie `httpOnly`).
+
+- **Tổng quan**: lượt tra cứu theo ngày/giờ, độ phủ tra cứu, mức đầy đủ từng trường, phân bổ theo phiên/phòng/giờ, trùng ghế, link sai, MSSV được tìm nhưng chưa có trong danh sách, trạng thái hệ thống.
+- **Sinh viên**: tìm kiếm, lọc, thêm, sửa, xoá, xuất CSV theo bộ lọc.
+- **Nhập CSV**: kiểm tra trước rồi nhập (upsert theo MSSV).
+- **Nhật ký**: lượt tra cứu (chỉ lưu MSSV và kết quả, không lưu IP) và thay đổi của quản trị viên.
+
+Thống kê tra cứu bắt đầu ghi từ khi chạy migration `add_admin_analytics`.
 
 ## PostgreSQL
 

@@ -8,7 +8,7 @@ export type RateLimitDecision = {
   retryAfterSeconds: number;
 };
 
-export type RateLimitScope = "lookup" | "led-image-refresh";
+export type RateLimitScope = "lookup" | "led-image-refresh" | "admin-login";
 
 type Bucket = { start: number; count: number };
 
