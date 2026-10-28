@@ -36,3 +36,25 @@ model LookupRateLimit {
 
   @@map("lookup_rate_limits")
 }
+
+model LookupEvent {
+  id          BigInt   @id @default(autoincrement())
+  studentCode String?  @map("student_code") @db.VarChar(16)
+  outcome     String   @db.VarChar(32)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt])
+  @@index([studentCode])
+  @@map("lookup_events")
+}
+
+model AdminAuditLog {
+  id          BigInt   @id @default(autoincrement())
+  action      String   @db.VarChar(32)
+  studentCode String?  @map("student_code") @db.VarChar(16)
+  detail      String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt])
+  @@map("admin_audit_logs")
+}
