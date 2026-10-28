@@ -19,6 +19,7 @@ model Student {
   awardTime          String?  @map("award_time")
   contactGroup       String?  @map("contact_group")
   invitationLink     String?  @map("invitation_link")
+  driveLink          String?  @map("drive_link")
   ledImageKey        String?  @map("led_image_key")
   sessionLabel       String?  @map("session_label")
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)

@@ -82,6 +82,7 @@ export async function findStudentByCode(code: string): Promise<StudentRow | null
     award_time: row.awardTime,
     contact_group: row.contactGroup,
     invitation_link: row.invitationLink,
+    drive_link: row.driveLink,
     led_image_key: row.ledImageKey,
     session_label: row.sessionLabel,
   };

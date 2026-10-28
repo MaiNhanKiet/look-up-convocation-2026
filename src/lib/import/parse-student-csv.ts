@@ -38,6 +38,8 @@ const HEADER_MAP: Record<string, keyof StudentRow> = {
   nhom_lien_lac: "contact_group",
   invitation_link: "invitation_link",
   link_thu_moi: "invitation_link",
+  drive_link: "drive_link",
+  link_drive: "drive_link",
   led_image_key: "led_image_key",
   led_image_path: "led_image_key",
   hinh_led: "led_image_key",
@@ -119,6 +121,7 @@ export function parseStudentCsv(text: string): ParsedStudentCsv {
       award_time: blankToNull(mapped.award_time),
       contact_group: blankToNull(mapped.contact_group),
       invitation_link: blankToNull(mapped.invitation_link),
+      drive_link: blankToNull(mapped.drive_link),
       led_image_key: blankToNull(mapped.led_image_key),
       session_label: blankToNull(mapped.session_label),
     });
