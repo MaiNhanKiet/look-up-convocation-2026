@@ -1096,6 +1096,16 @@
 .previewButton[data-ready="false"] {
   visibility: hidden;
 }
+.driveLinkRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 54px;
+  margin-top: 12px;
+  padding: 0 2px 12px;
+  border-bottom: 1px solid #e3d6c6;
+}
 .ledFooter {
   display: flex;
   flex-direction: row;

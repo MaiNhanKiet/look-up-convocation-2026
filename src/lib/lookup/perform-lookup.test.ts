@@ -18,6 +18,7 @@ const student: StudentRow = {
   award_time: " 08:30 ",
   contact_group: " https://example.com/nhom-lien-lac-01 ",
   invitation_link: " https://example.com/thu-moi/HE123456 ",
+  drive_link: null,
   led_image_key: "HE123456.jpg",
   session_label: "Đợt 1",
 };

@@ -9,6 +9,7 @@ export type StudentRow = {
   award_time: string | null;
   contact_group: string | null;
   invitation_link: string | null;
+  drive_link: string | null;
   led_image_key: string | null;
   session_label: string | null;
 };
@@ -35,6 +36,7 @@ export type PublicStudent = {
   awardTime: string | null;
   contactGroup: string | null;
   invitationLink: string | null;
+  driveLink: string | null;
   ledExternalUrl: string | null;
   ledImageUrl: string | null;
   ledImageExpiresAt: number | null;

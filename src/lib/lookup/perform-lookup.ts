@@ -119,6 +119,7 @@ export async function presentStudent(
     awardTime: presentText(row.award_time),
     contactGroup: presentText(row.contact_group),
     invitationLink: presentHttpUrl(row.invitation_link),
+    driveLink: presentHttpUrl(row.drive_link),
     ledExternalUrl,
     sessionLabel: presentText(row.session_label),
     ledImageUrl,
