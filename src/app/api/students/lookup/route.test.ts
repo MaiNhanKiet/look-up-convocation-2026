@@ -49,6 +49,17 @@ describe("POST /api/students/lookup", () => {
     assert.equal(body.student.ledImageStatus, "ready");
     assert.equal(body.student.email, "an.demo@example.edu");
     assert.equal(body.student.emailRevealable, true);
+    assert.equal(body.student.emailShown, true);
+  });
+
+  it("hides email from the response when PUBLIC_EMAIL_MODE=hidden", async () => {
+    process.env.PUBLIC_EMAIL_MODE = "hidden";
+    const response = await POST(post({ studentCode: "he260001" }));
+    const body = await response.json();
+    assert.equal(body.ok, true);
+    assert.equal(body.student.email, null);
+    assert.equal(body.student.emailRevealable, false);
+    assert.equal(body.student.emailShown, false);
   });
 
   it("returns not found for a valid code outside the demo set", async () => {
@@ -76,6 +87,7 @@ describe("POST /api/students/lookup", () => {
     assert.equal(body.student.invitationLink, null);
     assert.equal(body.student.email, null);
     assert.equal(body.student.emailRevealable, false);
+    assert.equal(body.student.emailShown, true);
     assert.equal(body.student.ledImageStatus, "missing");
     assert.equal(body.student.sessionLabel, null);
   });

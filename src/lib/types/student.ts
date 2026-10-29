@@ -29,6 +29,8 @@ export type PublicStudent = {
   studentCode: string;
   email: string | null;
   emailRevealable: boolean;
+  /** False when PUBLIC_EMAIL_MODE=hidden — UI omits the email row entirely. */
+  emailShown: boolean;
   seatTcn: string | null;
   seatPh2: string | null;
   checkinTime: string | null;

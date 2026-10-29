@@ -1,3 +1,4 @@
+import type { EmailMode } from "@/lib/config";
 import { copy, rateLimitMessage } from "@/lib/copy";
 import { DEMO_LED_PATH } from "@/lib/demo/students";
 import { maskEmail } from "@/lib/email";
@@ -15,7 +16,7 @@ export type LookupSource = "postgres" | "demo" | "unconfigured";
 
 export type LookupDependencies = {
   source: LookupSource;
-  emailMode: "masked" | "full";
+  emailMode: EmailMode;
   clientKey: string;
   remoteIp: string;
   turnstileRequired: boolean;
@@ -71,7 +72,7 @@ function presentHttpUrl(value: string | null): string | null {
 export async function presentStudent(
   row: StudentRow,
   options: {
-    emailMode: "masked" | "full";
+    emailMode: EmailMode;
     demo: boolean;
     signLedImage: (path: string) => Promise<LedImageAccessResult>;
   },
@@ -82,6 +83,7 @@ export async function presentStudent(
   let ledImageUrl: string | null = null;
   let ledImageExpiresAt: number | null = null;
   let ledImageStatus: PublicStudent["ledImageStatus"] = "missing";
+  const emailShown = options.emailMode !== "hidden";
 
   if (path && !ledExternalUrl) {
     const demoLed = options.demo && path === DEMO_LED_PATH;
@@ -106,12 +108,14 @@ export async function presentStudent(
   return {
     fullName: row.full_name.trim(),
     studentCode: row.student_code,
-    email: email
-      ? options.emailMode === "full"
-        ? email
-        : maskEmail(email)
-      : null,
-    emailRevealable: Boolean(email) && options.emailMode === "full",
+    email:
+      emailShown && email
+        ? options.emailMode === "full"
+          ? email
+          : maskEmail(email)
+        : null,
+    emailRevealable: emailShown && Boolean(email) && options.emailMode === "full",
+    emailShown,
     seatTcn: presentText(row.seat_tcn),
     seatPh2: presentText(row.seat_ph2),
     checkinTime: presentText(row.checkin_time),

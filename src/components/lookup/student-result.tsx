@@ -51,48 +51,50 @@ export function StudentResult({
             </strong>
           </p>
           <StudentInfoCard student={student} />
-          <div className={styles.emailRow}>
-            <span className={styles.emailLabel}>Email</span>
-            <p
-              className={styles.emailValue}
-              data-visible={emailVisible}
-              aria-live="polite"
-            >
-              <span className={styles.emailMasked} aria-hidden={emailVisible}>
-                {hiddenEmail}
-              </span>
-              <span
-                className={styles.emailRevealed}
-                aria-hidden={!emailVisible}
+          {student.emailShown ? (
+            <div className={styles.emailRow}>
+              <span className={styles.emailLabel}>Email</span>
+              <p
+                className={styles.emailValue}
+                data-visible={emailVisible}
+                aria-live="polite"
               >
-                {revealedEmail}
-              </span>
-            </p>
-            {student.email && student.emailRevealable ? (
-              <button
-                type="button"
-                onClick={() => setEmailVisible((visible) => !visible)}
-                className={styles.emailToggle}
-                aria-label={
-                  emailVisible ? "Ẩn địa chỉ email" : "Hiện địa chỉ email"
-                }
-                aria-pressed={emailVisible}
-              >
-                <span className={styles.emailToggleIcons} aria-hidden="true">
-                  <Eye
-                    className={styles.emailShowIcon}
-                    size={16}
-                    strokeWidth={1.5}
-                  />
-                  <EyeOff
-                    className={styles.emailHideIcon}
-                    size={16}
-                    strokeWidth={1.5}
-                  />
+                <span className={styles.emailMasked} aria-hidden={emailVisible}>
+                  {hiddenEmail}
                 </span>
-              </button>
-            ) : null}
-          </div>
+                <span
+                  className={styles.emailRevealed}
+                  aria-hidden={!emailVisible}
+                >
+                  {revealedEmail}
+                </span>
+              </p>
+              {student.email && student.emailRevealable ? (
+                <button
+                  type="button"
+                  onClick={() => setEmailVisible((visible) => !visible)}
+                  className={styles.emailToggle}
+                  aria-label={
+                    emailVisible ? "Ẩn địa chỉ email" : "Hiện địa chỉ email"
+                  }
+                  aria-pressed={emailVisible}
+                >
+                  <span className={styles.emailToggleIcons} aria-hidden="true">
+                    <Eye
+                      className={styles.emailShowIcon}
+                      size={16}
+                      strokeWidth={1.5}
+                    />
+                    <EyeOff
+                      className={styles.emailHideIcon}
+                      size={16}
+                      strokeWidth={1.5}
+                    />
+                  </span>
+                </button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         <LedPreview
           key={`${student.studentCode}-${student.ledExternalUrl ?? student.ledImageUrl ?? student.ledImageStatus}`}

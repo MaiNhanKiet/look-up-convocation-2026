@@ -94,10 +94,28 @@ function plainStudentCode(value: string): string {
 
 function formatIssue(value: string): boolean {
   if (!value) return false;
-  if (value.length === 7 || value.length === 8) {
+  // Full 8-char codes (2 letters + 6 digits) must match the pattern.
+  if (value.length === 8) {
     return !STUDENT_CODE_PATTERN.test(value);
   }
+  // Length 7 is either a finished short code (first digit 5–9) or an
+  // in-progress normal 6-digit code — only fully validate the short form.
+  if (value.length === 7) {
+    const firstDigit = value[2];
+    if (firstDigit && /[5-9]/.test(firstDigit)) {
+      return !STUDENT_CODE_PATTERN.test(value);
+    }
+  }
   return [...value].some((char, index) => !CODE_SLOTS[index]?.test(char));
+}
+
+function codeLengthHint(value: string): string {
+  const length = value.trim().length;
+  const max =
+    length === 7 && STUDENT_CODE_PATTERN.test(value.trim().toUpperCase())
+      ? 7
+      : 8;
+  return `${length}/${max}`;
 }
 
 type Notice = { tone: "neutral" | "alert"; message: string; retry?: boolean };
@@ -389,14 +407,16 @@ export function StudentLookup({
                 onSubmit={(event) => {
                   event.preventDefault();
                   if (!parsedInput.ok) {
-                    if (code && formatIssue(code)) {
-                      setFormatInvalid(true);
-                      if (!formatNoticeUsed.current) {
-                        formatNoticeUsed.current = true;
-                        setShowFormatMessage(true);
-                      }
-                      shakeFrame();
+                    if (!code.trim()) {
+                      setFieldError(copy.emptyCode);
+                      return;
                     }
+                    setFormatInvalid(true);
+                    if (!formatNoticeUsed.current) {
+                      formatNoticeUsed.current = true;
+                      setShowFormatMessage(true);
+                    }
+                    shakeFrame();
                     return;
                   }
                   void lookup(code);
@@ -485,7 +505,7 @@ export function StudentLookup({
                     </button>
                   ) : (
                     <span className={styles.inputCount} aria-hidden="true">
-                      {`${code.trim().length}/8`}
+                      {codeLengthHint(code)}
                     </span>
                   )}
                 </div>

@@ -14,8 +14,12 @@ export function isDemoLookup(): boolean {
   return resolveDataSource() === "demo";
 }
 
-export function readEmailMode(): "masked" | "full" {
-  return process.env.PUBLIC_EMAIL_MODE === "masked" ? "masked" : "full";
+export type EmailMode = "full" | "masked" | "hidden";
+
+export function readEmailMode(): EmailMode {
+  const value = process.env.PUBLIC_EMAIL_MODE?.trim().toLowerCase();
+  if (value === "masked" || value === "hidden") return value;
+  return "full";
 }
 
 export function readRateLimitConfig(): { limit: number; windowSeconds: number } {

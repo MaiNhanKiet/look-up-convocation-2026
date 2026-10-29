@@ -4,18 +4,24 @@ import {
   isMaintenanceMode,
   parseMaintenanceReopenAt,
   readCorrectionFormUrl,
+  readEmailMode,
 } from "@/lib/config";
 import { remainingUntil } from "@/lib/maintenance-clock";
 
 const originalMaintenance = process.env.MAINTENANCE_MODE;
 const originalFormUrl = process.env.CORRECTION_FORM_URL;
+const originalEmailMode = process.env.PUBLIC_EMAIL_MODE;
 
 afterEach(() => {
   restore("MAINTENANCE_MODE", originalMaintenance);
   restore("CORRECTION_FORM_URL", originalFormUrl);
+  restore("PUBLIC_EMAIL_MODE", originalEmailMode);
 });
 
-function restore(key: "MAINTENANCE_MODE" | "CORRECTION_FORM_URL", value: string | undefined) {
+function restore(
+  key: "MAINTENANCE_MODE" | "CORRECTION_FORM_URL" | "PUBLIC_EMAIL_MODE",
+  value: string | undefined,
+) {
   if (value === undefined) delete process.env[key];
   else process.env[key] = value;
 }
@@ -30,6 +36,17 @@ describe("site mode", () => {
     }
     process.env.MAINTENANCE_MODE = "false";
     assert.equal(isMaintenanceMode(), false);
+  });
+
+  it("reads PUBLIC_EMAIL_MODE including hidden", () => {
+    delete process.env.PUBLIC_EMAIL_MODE;
+    assert.equal(readEmailMode(), "full");
+    process.env.PUBLIC_EMAIL_MODE = "masked";
+    assert.equal(readEmailMode(), "masked");
+    process.env.PUBLIC_EMAIL_MODE = "HIDDEN";
+    assert.equal(readEmailMode(), "hidden");
+    process.env.PUBLIC_EMAIL_MODE = "full";
+    assert.equal(readEmailMode(), "full");
   });
 
   it("accepts only http and https form links", () => {

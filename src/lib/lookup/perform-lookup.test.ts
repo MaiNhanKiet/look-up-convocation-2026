@@ -59,6 +59,7 @@ describe("performLookup", () => {
     assert.equal(outcome.body.student.studentCode, "HE123456");
     assert.equal(outcome.body.student.email, "a******@fpt.edu.vn");
     assert.equal(outcome.body.student.emailRevealable, false);
+    assert.equal(outcome.body.student.emailShown, true);
     assert.equal(outcome.body.student.seatTcn, "A-12");
     assert.equal(outcome.body.student.seatPh2, null);
     assert.equal(outcome.body.student.checkinTime, "07:00");
@@ -88,6 +89,21 @@ describe("performLookup", () => {
     if (!outcome.body.ok) return;
     assert.equal(outcome.body.student.email, "an.nguyen@fpt.edu.vn");
     assert.equal(outcome.body.student.emailRevealable, true);
+    assert.equal(outcome.body.student.emailShown, true);
+  });
+
+  it("omits email entirely when mode is hidden", async () => {
+    const outcome = await performLookup(
+      post({ studentCode: "HE123456" }),
+      deps({ emailMode: "hidden" }),
+    );
+    assert.equal(outcome.body.ok, true);
+    if (!outcome.body.ok) return;
+    assert.equal(outcome.body.student.email, null);
+    assert.equal(outcome.body.student.emailRevealable, false);
+    assert.equal(outcome.body.student.emailShown, false);
+    assert.equal(JSON.stringify(outcome.body).includes("an.nguyen@fpt.edu.vn"), false);
+    assert.equal(JSON.stringify(outcome.body).includes("fpt.edu.vn"), false);
   });
 
   it("returns 404 when the repository has no row", async () => {

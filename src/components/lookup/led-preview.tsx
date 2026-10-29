@@ -317,9 +317,9 @@ export function LedPreview({
           Xem kích thước lớn <Maximize2 size={15} aria-hidden='true' />
         </button>
       ) : null}
-      {student.driveLink ? (
-        <div className={styles.driveLinkRow}>
-          <span className={styles.invitationCellLabel}>Ảnh Profile</span>
+      <div className={styles.driveLinkRow}>
+        <span className={styles.invitationCellLabel}>Ảnh Profile</span>
+        {student.driveLink ? (
           <a
             className={styles.ledExternalButton}
             href={student.driveLink}
@@ -329,8 +329,10 @@ export function LedPreview({
             Mở Ảnh Profile
             <ExternalLink size={15} strokeWidth={1.8} aria-hidden='true' />
           </a>
-        </div>
-      ) : null}
+        ) : (
+          <span className={styles.invitationUnavailable}>{copy.updating}</span>
+        )}
+      </div>
       <div
         className={styles.ledFooter}
         data-align={correctionFormUrl ? undefined : 'center'}

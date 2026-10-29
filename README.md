@@ -28,7 +28,7 @@ Sao chép `.env.example` thành `.env.local`.
 | `MINIO_BUCKET` | Bucket chứa hình LED. Mặc định `led-images`. |
 | `MINIO_PUBLIC_ENDPOINT` | Origin HTTPS công khai để ký Presigned URL. Để trống thì Next.js proxy ảnh, không trả host `127.0.0.1`. |
 | `NEXT_PUBLIC_HERO_ANIMATION_INTERVAL_MS` | Chu kỳ phát lại hiệu ứng mũi tên và slogan, tính bằng mili giây. Mặc định `5000`, tối thiểu `3500`. |
-| `PUBLIC_EMAIL_MODE` | `full` (mặc định) cho phép người tra cứu bấm hiện email; `masked` luôn che địa chỉ và ẩn nút hiện. |
+| `PUBLIC_EMAIL_MODE` | `full` (mặc định) cho phép bấm hiện email; `masked` luôn che và ẩn nút hiện; `hidden` ẩn hẳn hàng Email khỏi UI và không trả email trong API. |
 | `RATE_LIMIT_SALT` | Chuỗi ngẫu nhiên để băm địa chỉ IP trước khi lưu hạn mức. |
 | `LOOKUP_RATE_LIMIT` | Số lần tra cứu trong một cửa sổ. Mặc định 8. |
 | `LOOKUP_RATE_WINDOW_SECONDS` | Độ dài cửa sổ. Mặc định 60 giây. |
